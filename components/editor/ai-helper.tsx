@@ -45,7 +45,7 @@ export function AIHelper({ content }: AIHelperProps) {
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `Prompt yang ada: "${content}"\n\nPertanyaan: ${query}\n\nBeri saran untuk memperbaiki prompt tersebut.`
+              text: `Prompt yang ada: "${content.replace(/"/g, '\\"')}"\n\nPertanyaan: ${query.replace(/"/g, '\\"')}\n\nBeri saran untuk memperbaiki prompt tersebut.`
             }]
           }]
         })

@@ -183,7 +183,7 @@ export default function EditorPage() {
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `Prompt yang ada: "${prompt}"\n\nPertanyaan: ${aiQuery}\n\nBeri saran untuk memperbaiki prompt tersebut.`
+              text: `Prompt yang ada: "${prompt.replace(/"/g, '\\"')}"\n\nPertanyaan: ${aiQuery.replace(/"/g, '\\"')}\n\nBeri saran untuk memperbaiki prompt tersebut.`
             }]
           }]
         })

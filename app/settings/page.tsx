@@ -164,10 +164,10 @@ export default function SettingsPage() {
                 <ol className="list-decimal list-inside space-y-2 text-sm">
                   <li>Buka <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">makersuite.google.com/app/apikey</a></li>
                   <li>Login dengan akun Google Anda</li>
-                  <li>Klik "Create API key"</li>
+                  <li>Klik &quot;Create API key&quot;</li>
                   <li>Salin API Key yang dihasilkan</li>
                   <li>Tempel API Key di input di atas</li>
-                  <li>Klik "Simpan API Key"</li>
+                  <li>Klik &quot;Simpan API Key&quot;</li>
                 </ol>
               </div>
             </CardContent>
