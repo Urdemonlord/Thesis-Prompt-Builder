@@ -57,7 +57,7 @@ yarn dev
 
 ### Menggunakan AI Helper
 
-1. Pastikan Anda telah menambahkan API Key OpenAI di pengaturan
+1. Pastikan Anda telah menambahkan API Key Gemini di pengaturan
 2. Buka panel "AI Helper" di sidebar
 3. Masukkan pertanyaan atau konteks tentang prompt Anda
 4. Klik "Dapatkan Saran" untuk mendapatkan masukan dari AI
