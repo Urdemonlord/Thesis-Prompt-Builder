@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { AlertCircle, Save, Download, Upload, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ExportDialog } from "@/components/editor/export-dialog";
 
 export default function SettingsPage() {
   const [apiKey, setApiKey] = useState("");
@@ -62,16 +63,17 @@ export default function SettingsPage() {
   
   const handleExportData = () => {
     const dataStr = JSON.stringify(allData, null, 2);
-    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `thesis-prompt-builder-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
     
-    const exportFileDefaultName = `thesis-prompt-builder-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-    
-    toast.success("Data exported successfully");
+    toast.success("Data berhasil diekspor");
   };
   
   const handleImportData = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,13 +117,17 @@ export default function SettingsPage() {
 
   return (
     <MainLayout>
-      <div className="container max-w-3xl mx-auto p-4 md:p-8">
+      <div className="container max-w-7xl mx-auto p-4 md:p-8">
         <Card className="border-0 shadow-none mb-6">
           <CardHeader className="px-0 pt-0">
-            <CardTitle className="text-2xl md:text-3xl">Settings</CardTitle>
-            <CardDescription>
-              Manage your application preferences and data
-            </CardDescription>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <CardTitle className="text-2xl md:text-3xl">Pengaturan</CardTitle>
+                <CardDescription>
+                  Kelola pengaturan aplikasi Anda
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
         </Card>
         
@@ -198,16 +204,16 @@ export default function SettingsPage() {
           
           <Card>
             <CardHeader>
-              <CardTitle>Data Management</CardTitle>
+              <CardTitle>Manajemen Data</CardTitle>
               <CardDescription>
-                Backup, restore, or clear your application data
+                Backup, restore, atau hapus data aplikasi Anda
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button variant="outline" onClick={handleExportData}>
                   <Download className="mr-2 h-4 w-4" />
-                  Export All Data
+                  Ekspor Semua Data
                 </Button>
                 
                 <div className="relative">
@@ -228,10 +234,10 @@ export default function SettingsPage() {
               <Separator className="my-4" />
               
               <div>
-                <h3 className="text-sm font-medium mb-2">Danger Zone</h3>
+                <h3 className="text-sm font-medium mb-2">Zona Bahaya</h3>
                 <Button variant="destructive" onClick={handleClearAllData}>
                   <Trash2 className="mr-2 h-4 w-4" />
-                  Clear All Data
+                  Hapus Semua Data
                 </Button>
               </div>
             </CardContent>

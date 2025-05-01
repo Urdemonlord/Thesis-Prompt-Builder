@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { MainLayout } from "@/components/layouts/main-layout";
 import { PromptEditor } from "@/components/editor/prompt-editor";
 import { PromptPreview } from "@/components/editor/prompt-preview";
@@ -10,12 +10,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Save, FileUp, FileDown, Bot, Loader2, Send, AlertCircle, CheckCircle } from "lucide-react";
+import { Save, FileUp, Loader2, Send, AlertCircle, CheckCircle } from "lucide-react";
 import { PromptConfigPanel } from "@/components/editor/prompt-config-panel";
 import { EditorToolbar } from "@/components/editor/editor-toolbar";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { debounce } from "lodash";
 import { Input } from "@/components/ui/input";
+import { ExportDialog } from "@/components/editor/export-dialog";
+import { debounce } from "lodash";
 
 interface PromptData {
   id?: string;
@@ -28,7 +28,15 @@ interface PromptData {
 }
 
 interface StorageData {
-  [key: string]: PromptData;
+  [key: string]: {
+    id: string;
+    title: string;
+    prompt: string;
+    category: string;
+    createdAt: string;
+    updatedAt: string;
+    lastEdited?: string;
+  };
 }
 
 interface AIResponse {
@@ -46,8 +54,8 @@ export default function EditorPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [aiQuery, setAiQuery] = useState("");
   const [aiSuggestion, setAiSuggestion] = useState("");
-  const [apiKey, setApiKey] = useState<string | null>(null)
-  
+  const [apiKey, setApiKey] = useState<string | null>(null);
+
   // Load template from localStorage if exists
   useEffect(() => {
     const templateData = localStorage.getItem("thesis-prompt-template");
@@ -61,36 +69,44 @@ export default function EditorPage() {
   }, []);
 
   useEffect(() => {
-    // Akses localStorage hanya di sisi client
-    const savedApiKey = localStorage.getItem("gemini_api_key")
-    setApiKey(savedApiKey)
-  }, [])
+    const savedApiKey = localStorage.getItem("gemini_api_key");
+    setApiKey(savedApiKey);
+  }, []);
 
-  // Auto-save draft dengan debounce
-  const debouncedSaveDraft = useCallback(
-    debounce((newPrompt: string, newTitle: string, newCategory: string) => {
-      const draftId = "draft";
-      const now = new Date().toISOString();
-      
-      setStorage((prevStorage: StorageData) => ({
-        ...prevStorage,
+  // Fungsi untuk menyimpan draft
+  const saveDraft = useCallback((newPrompt: string, newTitle: string, newCategory: string) => {
+    const draftId = "draft";
+    const now = new Date().toISOString();
+    setStorage((prevStorage) => {
+      const newStorage: StorageData = {
+        ...(prevStorage || {}),
         [draftId]: {
           id: draftId,
           title: newTitle,
           prompt: newPrompt,
           category: newCategory,
-          createdAt: prevStorage[draftId]?.createdAt || now,
+          createdAt: prevStorage?.[draftId]?.createdAt || now,
           updatedAt: now,
           lastEdited: now
         }
-      }));
-    }, 1000),
-    []
-  );
+      };
+      return newStorage;
+    });
+  }, [setStorage]);
 
-  // Handle perubahan prompt, title, dan category
+  // Debounce saveDraft hanya sekali
+  const debouncedSaveDraft = useRef(
+    debounce((newPrompt: string, newTitle: string, newCategory: string) => {
+      saveDraft(newPrompt, newTitle, newCategory);
+    }, 1000)
+  ).current;
+
+  // Auto-save draft saat prompt, title, atau category berubah
   useEffect(() => {
     debouncedSaveDraft(prompt, title, category);
+    return () => {
+      debouncedSaveDraft.cancel();
+    };
   }, [prompt, title, category, debouncedSaveDraft]);
 
   const handleInsertTemplate = (template: string) => {
@@ -101,51 +117,35 @@ export default function EditorPage() {
   const handleSave = useCallback(() => {
     const timestamp = new Date().toISOString();
     const promptId = `prompt_${timestamp}`;
-    const promptData = { 
-      id: promptId,
-      title, 
-      prompt, 
-      category, 
-      createdAt: timestamp,
-      updatedAt: timestamp 
-    };
-    
-    setStorage((prevStorage: StorageData) => ({
-      ...prevStorage,
-      [promptId]: promptData
-    }));
-    
-    toast.success("Prompt saved successfully!");
+    setStorage((prevStorage) => {
+      const newStorage: StorageData = {
+        ...(prevStorage || {}),
+        [promptId]: {
+          id: promptId,
+          title,
+          prompt,
+          category,
+          createdAt: timestamp,
+          updatedAt: timestamp
+        }
+      };
+      return newStorage;
+    });
+    toast.success("Prompt berhasil disimpan!");
   }, [title, prompt, category, setStorage]);
-  
-  const handleExport = useCallback(() => {
-    const promptData = { title, prompt, category, exportedAt: new Date().toISOString() };
-    const dataStr = JSON.stringify(promptData, null, 2);
-    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
-    
-    const exportFileDefaultName = `${title.replace(/\s+/g, '-').toLowerCase()}.json`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-  }, [title, prompt, category]);
-  
+
   const handleImport = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
         const content = e.target?.result as string;
         const importedData = JSON.parse(content);
-        
         if (importedData.prompt && importedData.title) {
           setTitle(importedData.title);
           setPrompt(importedData.prompt);
           setCategory(importedData.category || "computer-science");
-          
           toast.success("Prompt imported successfully!");
         } else {
           toast.error("Invalid prompt format");
@@ -156,23 +156,19 @@ export default function EditorPage() {
       }
     };
     reader.readAsText(file);
-    
-    // Reset the input
     event.target.value = '';
   }, []);
 
   const handleGetAiSuggestion = async () => {
     if (!aiQuery.trim()) {
-      toast.error("Masukkan pertanyaan terlebih dahulu")
-      return
+      toast.error("Masukkan pertanyaan terlebih dahulu");
+      return;
     }
-
     if (!apiKey) {
-      toast.error("API Key Gemini belum dikonfigurasi. Silakan tambahkan API Key di halaman Settings untuk menggunakan fitur AI Helper.")
-      return
+      toast.error("API Key Gemini belum dikonfigurasi. Silakan tambahkan API Key di halaman Settings untuk menggunakan fitur AI Helper.");
+      return;
     }
-
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent", {
         method: "POST",
@@ -183,26 +179,24 @@ export default function EditorPage() {
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `Prompt yang ada: "${prompt.replace(/"/g, '\\"')}"\n\nPertanyaan: ${aiQuery.replace(/"/g, '\\"')}\n\nBeri saran untuk memperbaiki prompt tersebut.`
+              text: `Prompt yang ada: "${prompt.replace(/"/g, '\"')}"\n\nPertanyaan: ${aiQuery.replace(/"/g, '\"')}\n\nBeri saran untuk memperbaiki prompt tersebut.`
             }]
           }]
         })
-      })
-
+      });
       if (!response.ok) {
-        throw new Error("Gagal mendapatkan saran")
+        throw new Error("Gagal mendapatkan saran");
       }
-
-      const data = await response.json()
-      const suggestionText = data.candidates[0].content.parts[0].text
-      setAiSuggestion(suggestionText)
+      const data = await response.json();
+      const suggestionText = data.candidates[0].content.parts[0].text;
+      setAiSuggestion(suggestionText);
     } catch (error) {
-      console.error(error)
-      toast.error("Gagal mendapatkan saran dari AI")
+      console.error(error);
+      toast.error("Gagal mendapatkan saran dari AI");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <MainLayout>
@@ -213,18 +207,12 @@ export default function EditorPage() {
               <div>
                 <CardTitle className="text-2xl md:text-3xl">Prompt Editor</CardTitle>
                 <CardDescription>
-                  Create and edit your thesis prompts
+                  Buat dan edit prompt tesis Anda
                 </CardDescription>
               </div>
-              
               <div className="flex flex-wrap items-center gap-3">
                 <CategorySelector value={category} onChange={setCategory} />
-                
-                <Button variant="outline" onClick={handleExport}>
-                  <FileDown className="mr-2 h-4 w-4" />
-                  Export
-                </Button>
-                
+                <ExportDialog title={title} content={prompt} category={category} />
                 <div className="relative">
                   <input
                     type="file"
@@ -238,16 +226,14 @@ export default function EditorPage() {
                     Import
                   </Button>
                 </div>
-                
                 <Button onClick={handleSave}>
                   <Save className="mr-2 h-4 w-4" />
-                  Save
+                  Simpan
                 </Button>
               </div>
             </div>
           </CardHeader>
         </Card>
-        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <PromptEditor
@@ -258,34 +244,22 @@ export default function EditorPage() {
               category={category}
               onCategoryChange={setCategory}
             />
-            
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList>
                 <TabsTrigger value="edit">Edit</TabsTrigger>
                 <TabsTrigger value="preview">Preview</TabsTrigger>
               </TabsList>
-              
               <TabsContent value="edit">
                 <PromptPreview content={prompt} />
               </TabsContent>
-              
               <TabsContent value="preview">
                 <PromptPreview content={prompt} />
               </TabsContent>
             </Tabs>
           </div>
-          
           <div className="space-y-6">
-            <PromptConfigPanel
-              onInsertTemplate={handleInsertTemplate}
-            />
-            
-            <EditorToolbar
-              onSave={handleSave}
-              onExport={handleExport}
-              onImport={handleImport}
-            />
-
+            <PromptConfigPanel onInsertTemplate={handleInsertTemplate} />
+            <EditorToolbar onSave={handleSave} onImport={handleImport} />
             <Card>
               <CardHeader>
                 <CardTitle>AI Helper</CardTitle>
@@ -313,7 +287,6 @@ export default function EditorPage() {
                     </div>
                   )}
                 </div>
-                
                 <div className="space-y-4">
                   <Input
                     placeholder="Tanyakan AI untuk saran perbaikan prompt..."
@@ -321,8 +294,8 @@ export default function EditorPage() {
                     onChange={(e) => setAiQuery(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault()
-                        handleGetAiSuggestion()
+                        e.preventDefault();
+                        handleGetAiSuggestion();
                       }
                     }}
                     disabled={!apiKey}
@@ -344,7 +317,6 @@ export default function EditorPage() {
                       </>
                     )}
                   </Button>
-                  
                   {aiSuggestion && (
                     <div className="p-4 bg-muted rounded-lg">
                       <h4 className="font-semibold mb-2">Saran AI:</h4>

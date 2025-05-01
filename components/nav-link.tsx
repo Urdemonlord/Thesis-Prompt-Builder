@@ -8,14 +8,14 @@ import { DivideIcon as LucideIcon } from "lucide-react";
 interface NavLinkProps {
   href: string;
   children: React.ReactNode;
-  Icon?: LucideIcon;
+  Icon?: typeof LucideIcon;
   className?: string;
 }
 
 export function NavLink({ href, children, Icon, className }: NavLinkProps) {
   const pathname = usePathname();
   const isActive = pathname === href || pathname.startsWith(`${href}/`);
-  
+
   return (
     <Link
       href={href}

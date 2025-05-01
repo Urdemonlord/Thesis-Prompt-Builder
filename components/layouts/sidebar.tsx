@@ -17,6 +17,15 @@ interface SidebarProps {
   className?: string;
 }
 
+// Static category item component - non-clickable
+function CategoryItem({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground">
+      <span>{children}</span>
+    </div>
+  );
+}
+
 export function Sidebar({ className }: SidebarProps) {
   return (
     <div className={cn("w-64 border-r bg-card flex-shrink-0", className)}>
@@ -51,24 +60,13 @@ export function Sidebar({ className }: SidebarProps) {
               <h3 className="text-xs font-medium pl-3 text-muted-foreground mb-2">
                 Categories
               </h3>
-              <NavLink href="/templates/computer-science">
-                Computer Science
-              </NavLink>
-              <NavLink href="/templates/law">
-                Law
-              </NavLink>
-              <NavLink href="/templates/economics">
-                Economics
-              </NavLink>
-              <NavLink href="/templates/psychology">
-                Psychology
-              </NavLink>
-              <NavLink href="/templates/literature">
-                Literature
-              </NavLink>
-              <NavLink href="/templates/geography">
-                Geography
-              </NavLink>
+              {/* Non-clickable category items */}
+              <CategoryItem>Computer Science</CategoryItem>
+              <CategoryItem>Law</CategoryItem>
+              <CategoryItem>Economics</CategoryItem>
+              <CategoryItem>Psychology</CategoryItem>
+              <CategoryItem>Literature</CategoryItem>
+              <CategoryItem>Geography</CategoryItem>
             </div>
             
             <Separator className="my-4" />

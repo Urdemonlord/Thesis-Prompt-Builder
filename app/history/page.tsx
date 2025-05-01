@@ -10,17 +10,19 @@ import { Edit, Trash2, Download } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ExportDialog } from "@/components/editor/export-dialog";
 
-interface PromptData {
-  id: string;
-  title: string;
-  prompt: string;
-  category: string;
-  createdAt: string;
-  updatedAt: string;
+interface StorageType {
+  [key: string]: {
+    id: string;
+    title: string;
+    prompt: string;
+    category: string;
+    createdAt: string;
+    updatedAt: string;
+    lastEdited?: string;
+  };
 }
-
-type StorageType = Record<string, PromptData>;
 
 export default function HistoryPage() {
   const [storage, setStorage] = useLocalStorage<StorageType>("thesis-prompts", {});
@@ -36,34 +38,19 @@ export default function HistoryPage() {
   }, [storage]);
 
   const handleDelete = useCallback((promptId: string) => {
-    if (window.confirm("Are you sure you want to delete this prompt?")) {
-      setStorage((prevStorage: StorageType) => {
-        const updatedStorage = { ...prevStorage };
-        delete updatedStorage[promptId];
-        return updatedStorage;
-      });
-      toast.success("Prompt deleted successfully");
+    if (window.confirm("Apakah Anda yakin ingin menghapus prompt ini?")) {
+      const newStorage = { ...storage };
+      delete newStorage[promptId];
+      setStorage(newStorage);
+      toast.success("Prompt berhasil dihapus");
     }
-  }, [setStorage]);
-
-  const handleExport = useCallback((prompt: PromptData) => {
-    const dataStr = JSON.stringify(prompt, null, 2);
-    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
-    
-    const exportFileDefaultName = `${prompt.title.replace(/\s+/g, '-').toLowerCase()}.json`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-  }, []);
+  }, [storage, setStorage]);
 
   const handleClearAll = useCallback(() => {
-    if (window.confirm("Are you sure you want to delete ALL prompts? This cannot be undone.")) {
-      // Keep only the draft
+    if (window.confirm("Apakah Anda yakin ingin menghapus SEMUA prompt? Tindakan ini tidak dapat dibatalkan.")) {
       const draftData = storage?.draft;
       setStorage(draftData ? { draft: draftData } : {});
-      toast.success("All prompts deleted successfully");
+      toast.success("Semua prompt berhasil dihapus");
     }
   }, [storage, setStorage]);
 
@@ -74,9 +61,9 @@ export default function HistoryPage() {
           <CardHeader className="px-0 pt-0">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <CardTitle className="text-2xl md:text-3xl">Prompt History</CardTitle>
+                <CardTitle className="text-2xl md:text-3xl">Riwayat Prompt</CardTitle>
                 <CardDescription>
-                  View and manage your saved prompts
+                  Kelola prompt yang telah Anda simpan
                 </CardDescription>
               </div>
               
@@ -93,7 +80,7 @@ export default function HistoryPage() {
         {promptHistory.length === 0 ? (
           <Alert>
             <AlertDescription>
-              You haven&apos;t saved any prompts yet. Go to the editor to create your first prompt!
+              Anda belum menyimpan prompt apapun. Pergi ke editor untuk membuat prompt pertama Anda!
             </AlertDescription>
           </Alert>
         ) : (
@@ -105,16 +92,13 @@ export default function HistoryPage() {
                     <div>
                       <CardTitle>{prompt.title}</CardTitle>
                       <CardDescription>
-                        Category: {prompt.category.split('-').map((word: string) => 
+                        Kategori: {prompt.category.split('-').map((word: string) => 
                           word.charAt(0).toUpperCase() + word.slice(1)
                         ).join(' ')}
                       </CardDescription>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="icon" onClick={() => handleExport(prompt)}>
-                        <Download className="h-4 w-4" />
-                        <span className="sr-only">Export</span>
-                      </Button>
+                      <ExportDialog title={prompt.title} content={prompt.prompt} category={prompt.category} />
                       <Button variant="ghost" size="icon" asChild>
                         <Link href={`/editor?id=${prompt.id}`}>
                           <Edit className="h-4 w-4" />
@@ -123,7 +107,7 @@ export default function HistoryPage() {
                       </Button>
                       <Button variant="ghost" size="icon" onClick={() => handleDelete(prompt.key)}>
                         <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Delete</span>
+                        <span className="sr-only">Hapus</span>
                       </Button>
                     </div>
                   </div>
