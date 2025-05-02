@@ -29,38 +29,39 @@ export function AIHelper({ content }: AIHelperProps) {
       return
     }
 
-    if (!apiKey) {
-      toast.error("API Key Gemini belum dikonfigurasi. Silakan atur di halaman Settings")
-      return
-    }
-
     setIsLoading(true)
     try {
-      const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent", {
+      const response = await fetch("/api/gemini", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-goog-api-key": apiKey
         },
         body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `Prompt yang ada: "${content.replace(/"/g, '\\"')}"\n\nPertanyaan: ${query.replace(/"/g, '\\"')}\n\nBeri saran untuk memperbaiki prompt tersebut.`
-            }]
-          }]
+          content,
+          query
         })
       })
 
       if (!response.ok) {
-        throw new Error("Gagal mendapatkan saran")
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Gagal mendapatkan saran")
       }
 
       const data = await response.json()
+      
+      if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+        throw new Error("Format response tidak valid")
+      }
+
       const suggestionText = data.candidates[0].content.parts[0].text
       setSuggestion(suggestionText)
     } catch (error) {
-      console.error(error)
-      toast.error("Gagal mendapatkan saran dari AI")
+      console.error("Error details:", error)
+      toast.error(
+        error instanceof Error 
+          ? `Gagal mendapatkan saran: ${error.message}`
+          : "Terjadi kesalahan saat memproses request"
+      )
     } finally {
       setIsLoading(false)
     }

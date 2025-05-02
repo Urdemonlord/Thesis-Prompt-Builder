@@ -164,35 +164,75 @@ export default function EditorPage() {
       toast.error("Masukkan pertanyaan terlebih dahulu");
       return;
     }
+
     if (!apiKey) {
       toast.error("API Key Gemini belum dikonfigurasi. Silakan tambahkan API Key di halaman Settings untuk menggunakan fitur AI Helper.");
       return;
     }
+
     setIsLoading(true);
     try {
-      const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `Prompt yang ada: "${prompt.replace(/"/g, '\"')}"\n\nPertanyaan: ${aiQuery.replace(/"/g, '\"')}\n\nBeri saran untuk memperbaiki prompt tersebut.`
-            }]
-          }]
-        })
-      });
+      const response = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": apiKey,
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: `Anda adalah asisten AI yang membantu memperbaiki prompt. Prompt yang ada: "${prompt.replace(/"/g, '\\"')}"\n\nPertanyaan: ${aiQuery.replace(/"/g, '\\"')}\n\nBeri saran untuk memperbaiki prompt tersebut dengan format yang jelas dan terstruktur.`
+              }]
+            }],
+            generationConfig: {
+              temperature: 0.7,
+              topK: 40,
+              topP: 0.95,
+              maxOutputTokens: 1024,
+            },
+            safetySettings: [
+              {
+                category: "HARM_CATEGORY_HARASSMENT",
+                threshold: "BLOCK_MEDIUM_AND_ABOVE"
+              },
+              {
+                category: "HARM_CATEGORY_HATE_SPEECH",
+                threshold: "BLOCK_MEDIUM_AND_ABOVE"
+              },
+              {
+                category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                threshold: "BLOCK_MEDIUM_AND_ABOVE"
+              },
+              {
+                category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+                threshold: "BLOCK_MEDIUM_AND_ABOVE"
+              }
+            ]
+          })
+        }
+      );
+
       if (!response.ok) {
-        throw new Error("Gagal mendapatkan saran");
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || "Gagal mendapatkan saran");
       }
+
       const data = await response.json();
+      if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+        throw new Error("Format response tidak valid");
+      }
+
       const suggestionText = data.candidates[0].content.parts[0].text;
       setAiSuggestion(suggestionText);
     } catch (error) {
-      console.error(error);
-      toast.error("Gagal mendapatkan saran dari AI");
+      console.error("Error details:", error);
+      toast.error(
+        error instanceof Error 
+          ? `Gagal mendapatkan saran: ${error.message}`
+          : "Terjadi kesalahan saat memproses request"
+      );
     } finally {
       setIsLoading(false);
     }
