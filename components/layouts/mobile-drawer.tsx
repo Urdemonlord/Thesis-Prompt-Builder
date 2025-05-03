@@ -4,7 +4,9 @@ import {
   Drawer, 
   DrawerClose, 
   DrawerContent, 
-  DrawerTrigger 
+  DrawerTrigger,
+  DrawerTitle,
+  DrawerHeader
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/layouts/sidebar";
@@ -19,6 +21,9 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
   return (
     <Drawer open={isOpen} onOpenChange={onClose}>
       <DrawerContent className="h-[85%]">
+        <DrawerHeader>
+          <DrawerTitle className="sr-only">Navigation Menu</DrawerTitle>
+        </DrawerHeader>
         <div className="absolute right-4 top-4">
           <DrawerClose asChild>
             <Button variant="ghost" size="icon">
