@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { MainLayout } from "@/components/layouts/main-layout";
 import { PromptEditor } from "@/components/editor/prompt-editor";
 import { PromptPreview } from "@/components/editor/prompt-preview";
-import { CategorySelector } from "@/components/editor/category-selector";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocalStorage } from "@/hooks/use-local-storage";
@@ -16,12 +15,21 @@ import { EditorToolbar } from "@/components/editor/editor-toolbar";
 import { Input } from "@/components/ui/input";
 import { ExportDialog } from "@/components/editor/export-dialog";
 import { debounce } from "lodash";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface PromptData {
   id?: string;
   title: string;
   prompt: string;
   category: string;
+  major: string;
   createdAt?: string;
   updatedAt?: string;
   lastEdited?: string;
@@ -33,6 +41,7 @@ interface StorageData {
     title: string;
     prompt: string;
     category: string;
+    major: string;
     createdAt: string;
     updatedAt: string;
     lastEdited?: string;
@@ -44,10 +53,20 @@ interface AIResponse {
   explanation: string;
 }
 
+const majors = [
+  { value: "computer-science", label: "Computer Science" },
+  { value: "law", label: "Law" },
+  { value: "economics", label: "Economics" },
+  { value: "psychology", label: "Psychology" },
+  { value: "literature", label: "Literature" },
+  { value: "geography", label: "Geography" },
+];
+
 export default function EditorPage() {
   const [prompt, setPrompt] = useState("");
   const [title, setTitle] = useState("Untitled Prompt");
   const [category, setCategory] = useState("pendahuluan");
+  const [major, setMajor] = useState("computer-science");
   const [activeTab, setActiveTab] = useState("edit");
   const [storage, setStorage] = useLocalStorage<StorageData>("thesis-prompts", {});
   const [aiResponse, setAIResponse] = useState<AIResponse | null>(null);
@@ -60,10 +79,11 @@ export default function EditorPage() {
   useEffect(() => {
     const templateData = localStorage.getItem("thesis-prompt-template");
     if (templateData) {
-      const { title, prompt, category } = JSON.parse(templateData);
+      const { title, prompt, category, major } = JSON.parse(templateData);
       setTitle(title);
       setPrompt(prompt);
       setCategory(category);
+      setMajor(major);
       localStorage.removeItem("thesis-prompt-template");
     }
   }, []);
@@ -73,8 +93,8 @@ export default function EditorPage() {
     setApiKey(savedApiKey);
   }, []);
 
-  // Fungsi untuk menyimpan draft
-  const saveDraft = useCallback((newPrompt: string, newTitle: string, newCategory: string) => {
+  // Save draft with both category and major
+  const saveDraft = useCallback((newPrompt: string, newTitle: string, newCategory: string, newMajor: string) => {
     const draftId = "draft";
     const now = new Date().toISOString();
     setStorage((prevStorage) => {
@@ -85,6 +105,7 @@ export default function EditorPage() {
           title: newTitle,
           prompt: newPrompt,
           category: newCategory,
+          major: newMajor,
           createdAt: prevStorage?.[draftId]?.createdAt || now,
           updatedAt: now,
           lastEdited: now
@@ -94,20 +115,20 @@ export default function EditorPage() {
     });
   }, [setStorage]);
 
-  // Debounce saveDraft hanya sekali
+  // Debounce saveDraft
   const debouncedSaveDraft = useRef(
-    debounce((newPrompt: string, newTitle: string, newCategory: string) => {
-      saveDraft(newPrompt, newTitle, newCategory);
+    debounce((newPrompt: string, newTitle: string, newCategory: string, newMajor: string) => {
+      saveDraft(newPrompt, newTitle, newCategory, newMajor);
     }, 1000)
   ).current;
 
-  // Auto-save draft saat prompt, title, atau category berubah
+  // Auto-save draft when prompt, title, category, or major changes
   useEffect(() => {
-    debouncedSaveDraft(prompt, title, category);
+    debouncedSaveDraft(prompt, title, category, major);
     return () => {
       debouncedSaveDraft.cancel();
     };
-  }, [prompt, title, category, debouncedSaveDraft]);
+  }, [prompt, title, category, major, debouncedSaveDraft]);
 
   const handleInsertTemplate = (template: string) => {
     setPrompt(template);
@@ -125,6 +146,7 @@ export default function EditorPage() {
           title,
           prompt,
           category,
+          major,
           createdAt: timestamp,
           updatedAt: timestamp
         }
@@ -132,7 +154,7 @@ export default function EditorPage() {
       return newStorage;
     });
     toast.success("Prompt berhasil disimpan!");
-  }, [title, prompt, category, setStorage]);
+  }, [title, prompt, category, major, setStorage]);
 
   const handleImport = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -146,6 +168,7 @@ export default function EditorPage() {
           setTitle(importedData.title);
           setPrompt(importedData.prompt);
           setCategory(importedData.category || "computer-science");
+          setMajor(importedData.major || "computer-science");
           toast.success("Prompt imported successfully!");
         } else {
           toast.error("Invalid prompt format");
@@ -251,7 +274,22 @@ export default function EditorPage() {
                 </CardDescription>
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <CategorySelector value={category} onChange={setCategory} />
+                <div className="flex gap-2">
+                  <Select value={major} onValueChange={setMajor}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Pilih jurusan" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {majors.map((major) => (
+                          <SelectItem key={major.value} value={major.value}>
+                            {major.label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <ExportDialog title={title} content={prompt} category={category} />
                 <div className="relative">
                   <input

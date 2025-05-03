@@ -21,55 +21,82 @@ const thesisTemplates: Record<string, any[]> = {
       id: "cs-judul",
       title: "Judul Skripsi",
       description: "Auto-generator judul skripsi berdasarkan minat dan bidang",
-      prompt: `Buatkan 5 judul skripsi untuk bidang [MINAT/BIDANG] di Informatika/Computer Science yang sedang tren dan relevan.`,
+      prompt: `Identifikasikan dan buatkan 5 judul skripsi yang inovatif, aplikatif, dan relevan dengan tren terkini dalam bidang [MINAT/BIDANG] di ranah Informatika/Ilmu Komputer.
+
+Untuk setiap judul:
+
+Sertakan deskripsi singkat (2–3 kalimat) mengenai ruang lingkup penelitian.
+
+Jelaskan alasan pemilihan topik tersebut, mencakup urgensi, relevansi dengan perkembangan teknologi saat ini, serta potensi kontribusi terhadap dunia akademik maupun industri.
+
+Soroti novelty (kebaruan), potensi tantangan riset, dan pendekatan/metode yang mungkin digunakan.
+
+Gunakan bahasa formal, akademik, dan presisi terminologi teknis.`,
     },
     {
       id: "cs-latar-belakang",
       title: "Latar Belakang",
       description: "Template latar belakang skripsi Informatika",
-      prompt: `Buatkan latar belakang penelitian untuk topik: [TOPIK] di bidang Informatika.`,
+      prompt: `Buatkan latar belakang penelitian yang argumentatif dan terstruktur untuk topik: [TOPIK] di bidang Informatika, berdasarkan literatur atau jurnal ilmiah berikut:
+
+[MASUKKAN DAFTAR JURNAL ATAU RINGKASANNYA DI SINI]
+
+Tulis dengan pendekatan sebagai berikut:
+
+Jelaskan fenomena atau isu yang menjadi dasar pemilihan topik
+
+Ulas secara ringkas temuan dan pendekatan dari literatur yang telah dibaca
+
+Identifikasi gap riset atau keterbatasan dari studi-studi tersebut
+
+Tunjukkan bagaimana penelitian ini akan menjawab gap tersebut atau memberikan pendekatan baru
+
+Gunakan gaya akademik, padat, dan berbasis analisis — bukan sekadar deskriptif.`,
     },
     {
       id: "cs-rumusan-masalah",
       title: "Rumusan Masalah",
       description: "Template rumusan masalah skripsi Informatika",
-      prompt: `Buatkan rumusan masalah untuk penelitian topik: [TOPIK] di bidang Informatika.`,
+      prompt: `Berdasarkan literatur atau jurnal yang telah dikumpulkan, buatkan rumusan masalah penelitian untuk topik: [TOPIK] di bidang Informatika. Rumusan masalah harus menunjukkan gap penelitian yang ditemukan dari studi sebelumnya, dengan satu pertanyaan utama yang kuat dan beberapa sub-pertanyaan yang mendetail. Gunakan pendekatan kritis terhadap literatur yang ada dan pastikan bahwa rumusan masalah tersebut dapat dijawab secara ilmiah melalui metode penelitian yang tepat.`,
     },
     {
       id: "cs-tujuan",
       title: "Tujuan Penelitian",
       description: "Template tujuan penelitian skripsi Informatika",
-      prompt: `Buatkan tujuan penelitian untuk topik: [TOPIK] di bidang Informatika.`,
+      prompt: `Berdasarkan rumusan masalah dan kajian literatur yang telah dilakukan, buatkan tujuan penelitian untuk topik: [TOPIK] di bidang Informatika. Tuliskan satu tujuan umum yang mencerminkan kontribusi utama dari penelitian ini terhadap perkembangan ilmu pengetahuan atau aplikasi di bidang tersebut. Lalu uraikan 2–4 tujuan khusus yang bersifat operasional, spesifik, terukur, dan relevan dengan metode yang akan digunakan. Pastikan tujuan tersebut menjawab pertanyaan penelitian secara sistematis dan menunjukkan arah capaian riset secara ilmiah.`,
     },
     {
       id: "cs-tinjauan-pustaka",
       title: "Tinjauan Pustaka",
       description: "Tinjauan pustaka dengan sitasi otomatis",
-      prompt: `Buatkan tinjauan pustaka untuk topik: [TOPIK] di bidang Informatika, lengkap dengan sitasi otomatis.`,
+      prompt: `Buatkan tinjauan pustaka untuk topik: [TOPIK] di bidang Informatika berdasarkan literatur ilmiah yang relevan dan terkini (maksimal 5 tahun terakhir). Sajikan ringkasan dari teori-teori utama, pendekatan yang telah digunakan dalam studi sebelumnya, serta celah penelitian (research gap) yang masih bisa dieksplorasi. Hubungkan setiap studi dengan topik penelitian yang diangkat, tunjukkan keterkaitan antarreferensi, dan soroti perbedaan pendekatan atau temuan. Tambahkan sitasi otomatis dalam format APA (nama, tahun), dan pastikan narasi bersifat kritis, bukan sekadar rangkuman.`,
     },
     {
       id: "cs-metodologi",
       title: "Metodologi Penelitian",
       description: "Template metodologi penelitian skripsi Informatika",
-      prompt: `Buatkan metodologi penelitian untuk topik: [TOPIK] di bidang Informatika.`,
+      prompt: `Buatkan metodologi penelitian secara lengkap dan sistematis untuk topik: [TOPIK] di bidang Informatika. Jelaskan pendekatan penelitian yang digunakan (kualitatif, kuantitatif, atau mixed-method), desain penelitian, metode pengumpulan data (misalnya survei, wawancara, observasi, atau pengujian sistem), populasi dan sampel (jika relevan), teknik analisis data (statistik, machine learning, thematic analysis, dll.), serta tools atau software yang digunakan dalam proses pengolahan data atau implementasi sistem. Paparkan juga justifikasi pemilihan metode dan bagaimana metodologi ini sesuai untuk menjawab rumusan masalah serta mencapai tujuan penelitian.`,
     },
     {
       id: "cs-hasil",
       title: "Hasil & Pembahasan",
       description: "Template hasil dan pembahasan skripsi Informatika",
-      prompt: `Buatkan hasil dan pembahasan untuk penelitian topik: [TOPIK] di bidang Informatika.`,
+      prompt: `Buatkan bagian hasil dan pembahasan secara mendalam untuk penelitian dengan topik: [TOPIK] di bidang Informatika. Sajikan temuan utama penelitian yang diperoleh dari data yang telah dikumpulkan dan analisis yang dilakukan. Bahas hasil yang ditemukan, baik yang mendukung maupun yang bertentangan dengan hipotesis atau teori sebelumnya. Jelaskan relevansi temuan ini dalam konteks penelitian sebelumnya dan apa implikasi praktis dari hasil penelitian ini untuk industri atau akademia. Analisis perbedaan antara hasil yang diharapkan dan yang ditemukan, serta faktor-faktor yang memengaruhi temuan tersebut. Sertakan interpretasi mendalam mengenai hasil dan bagaimana temuan tersebut dapat diintegrasikan ke dalam literatur yang ada.`,
     },
     {
       id: "cs-kesimpulan",
       title: "Kesimpulan & Saran",
       description: "Template kesimpulan dan saran skripsi Informatika",
-      prompt: `Buatkan kesimpulan dan saran untuk penelitian topik: [TOPIK] di bidang Informatika.`,
+      prompt: `Buatkan kesimpulan dan saran secara komprehensif untuk penelitian dengan topik: [TOPIK] di bidang Informatika. Ringkas temuan utama yang diperoleh dari hasil penelitian, jelaskan kontribusi yang telah diberikan oleh penelitian ini terhadap pengembangan ilmu pengetahuan di bidang Informatika, serta relevansinya terhadap tren dan perkembangan teknologi saat ini. Diskusikan keterbatasan penelitian ini, baik dari segi metodologi, ruang lingkup, ataupun variabel yang belum dijangkau. Berdasarkan hasil temuan, buatkan saran untuk pengembangan penelitian lebih lanjut, baik untuk memperdalam kajian yang sudah ada ataupun mengeksplorasi topik baru yang muncul dari penelitian ini. Selain itu, beri rekomendasi praktis untuk industri atau pihak terkait yang dapat memanfaatkan hasil penelitian ini dalam aplikasi nyata.`,
     },
     {
       id: "cs-abstrak",
       title: "Abstrak (Indonesia & English)",
       description: "Template abstrak dalam Bahasa Indonesia dan Inggris",
-      prompt: `Buatkan abstrak dalam Bahasa Indonesia dan Bahasa Inggris untuk penelitian topik: [TOPIK] di bidang Informatika.`,
+      prompt: `Buatkan abstrak dalam Bahasa Indonesia dan Bahasa Inggris untuk penelitian dengan topik: [TOPIK] di bidang Informatika.
+
+Bahasa Indonesia:
+Tulis abstrak yang mencakup latar belakang singkat mengenai topik yang diteliti, tujuan penelitian yang ingin dicapai, metodologi yang digunakan (termasuk jenis penelitian, metode pengumpulan data, dan teknik analisis data), hasil utama yang ditemukan selama penelitian, serta kesimpulan dan kontribusi penelitian terhadap pengembangan ilmu Informatika. Sebutkan pula relevansi penelitian dengan perkembangan teknologi saat ini dan potensi aplikasi praktis dari hasil penelitian.`,
     },
   ],
   "law": [
@@ -358,11 +385,12 @@ export default function TemplatesPage() {
   const [selectedMajor, setSelectedMajor] = useState("computer-science");
   const router = useRouter();
 
-  const handleUseTemplate = (prompt: string) => {
+  const handleUseTemplate = (prompt: string, category: string) => {
     const templateData = {
       title: "Template Baru",
       prompt,
-      category: selectedMajor,
+      category,
+      major: selectedMajor,
       lastEdited: new Date().toISOString(),
     };
     localStorage.setItem("thesis-prompt-template", JSON.stringify(templateData));
@@ -400,7 +428,7 @@ export default function TemplatesPage() {
             <TemplateCard
               key={template.id}
               template={template}
-              onUseTemplate={handleUseTemplate}
+              onUseTemplate={() => handleUseTemplate(template.prompt, template.id.split('-')[1])}
             />
           ))}
         </div>

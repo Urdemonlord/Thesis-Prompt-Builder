@@ -56,19 +56,6 @@ export function Sidebar({ className }: SidebarProps) {
             
             <Separator className="my-4" />
             
-            <div className="space-y-1">
-              <h3 className="text-xs font-medium pl-3 text-muted-foreground mb-2">
-                Categories
-              </h3>
-              {/* Non-clickable category items */}
-              <CategoryItem>Computer Science</CategoryItem>
-              <CategoryItem>Law</CategoryItem>
-              <CategoryItem>Economics</CategoryItem>
-              <CategoryItem>Psychology</CategoryItem>
-              <CategoryItem>Literature</CategoryItem>
-              <CategoryItem>Geography</CategoryItem>
-            </div>
-            
             <Separator className="my-4" />
             
             <div className="space-y-1">
